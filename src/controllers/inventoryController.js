@@ -1,8 +1,11 @@
 const Inventory = require('../models/inventoryModel')
+const Product = require ('../models/productModel')
+const mongoose = require('mongoose')
+const { validationResult } = require('express-validator')
 
 const getAllInventoryItems = async (req,res) => {
     try{
-        const InventoryItems = await Inventory.find().populate('productId')
+        const InventoryItems = await Inventory.find().populate('product')
         res.json(InventoryItems)
     } catch(err) {
         console.error(err.message)
@@ -13,7 +16,7 @@ const getAllInventoryItems = async (req,res) => {
 const getInventoryItemById = async (req,res) => {
     const { id } = req.params
     try{
-        const InventoryItem = await Inventory.findById(id).populate('productId')
+        const InventoryItem = await Inventory.findById(id).populate('product')
         if(!InventoryItem){
             return res.status(404).json({msg: "Inventory item not found"})
         }
@@ -25,10 +28,14 @@ const getInventoryItemById = async (req,res) => {
 }
 
 const createInventoryItem = async(req,res) =>{
-    const {productId, quantity, location} = req .body
+    const {product, quantity, location} = req.body
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
     try{
         const newInventoryItem = new Inventory({
-            productId,
+            product,
             quantity,
             location
         })
@@ -43,6 +50,26 @@ const createInventoryItem = async(req,res) =>{
 const updateInventoryItem = async(req,res) =>{
     const { id } = req.params
     const { product, quantity, location } = req.body
+    if (Array.isArray(product)) {
+        try {
+            for (let productId of product) {
+                if (!mongoose.Types.ObjectId.isValid(productId)) {
+                    return res.status(400).json({ msg: `Invalid supplier ID: ${productId}` })
+                }
+                const product = await Product.findById(productId)
+                if (!product) {
+                    return res.status(404).json({ msg: `Supplier with id ${productId} not found` })
+                }
+            }
+        } catch (err) {
+            console.error(err.message)
+            return res.status(500).send("Server error")
+        }
+    }
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
     try{
         const updatedInventoryItem = await Inventory.findByIdAndUpdate(
             id,
