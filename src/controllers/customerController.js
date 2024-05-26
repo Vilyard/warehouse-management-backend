@@ -1,8 +1,12 @@
 const Customer = require('../models/customerModel')
-
+const { validationResult } = require('express-validator')
 
 const createCustomer = async(req,res) => {
     const { name, email, address, phone } = req.body
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
     try{
         const customer = new Customer({name, email ,address, phone})
         await customer.save()
@@ -40,6 +44,10 @@ const getCustomerById = async(req,res) => {
 const updateCustomer = async(req,res) => {
     const { id } = req.params
     const { name, email, address, phone } = req.body
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
     try{
         const customer = await Customer.findByIdAndUpdate(
             id, 

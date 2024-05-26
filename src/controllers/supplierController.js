@@ -1,4 +1,5 @@
 const Supplier = require('../models/supplierModel')
+const { validationResult } = require('express-validator')
 
 const getAllSuppliers = async (req,res) => {
     try{
@@ -11,6 +12,10 @@ const getAllSuppliers = async (req,res) => {
 }
 
 const createSupplier = async(req,res) => {
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({ errors: errors.array() })
+    }
     const { name, contactName, contactEmail, contactPhone, address, suppliedProducts } = req.body
     try{
         const supplier = new Supplier({name, contactName, contactEmail, contactPhone, address, suppliedProducts})
@@ -25,6 +30,10 @@ const createSupplier = async(req,res) => {
 const updateSupplier = async(req,res) => {
     const { id } = req.params
     const { name, contactName, contactEmail, contactPhone, address, suppliedProducts } = req.body
+    const errors = validationResult(req)
+    if(!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
     try{
         const supplier = await Supplier.findByIdAndUpdate(
             id,
