@@ -1,11 +1,18 @@
 const express = require('express')
 const connectDB = require('./config/db')
 require('dotenv').config()
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000
 
 // Middleware to parse JSON
 app.use(express.json());
+
+app.use(cors({
+  origin: 'http://localhost:3000', // Allow requests from this origin
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+}));
 
 // Define routes
 app.get('/', (req, res) => {

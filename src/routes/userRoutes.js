@@ -15,7 +15,7 @@ router.post('/login',[
     check( 'password', 'Password is required' ).exists()
 ], loginUser)
 router.put('/user/:id', auth, updateUser)
-router.delete('/user/:id', auth, deleteUser)
+router.delete('/user/:id', deleteUser)
 router.get('/user/:id', auth, getUser)
 router.get('/users', auth, getAllUsers)
 

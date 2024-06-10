@@ -21,16 +21,13 @@ const registerUser = async (req, res) => {
       password,
       role,
     })
-
     await user.save()
-
     const payload = {
       user: {
         id: user.id,
         role: user.role,
       },
     }
-
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" }, (err, token) => {
       if (err) throw err
       res.status(201).json({ token })
@@ -51,9 +48,8 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
-    const isMatch = await bcrypt.compare(password, user.password)
-    if(!isMatch){
-      return res.status(400).json({ msg: "Invalid Credentials" })
+    if(password !== user.password){
+      return res.status(400).json({ msg: "Invalid Password" })
     }
     const payload = {
       user: {
@@ -107,10 +103,7 @@ const updateUser = async (req, res) => {
       if (name) updatedFields.name = name
       if (email) updatedFields.email = email
       if (role) updatedFields.role = role
-      if (password) {
-          const salt = await bcrypt.genSalt(10);
-          updatedFields.password = await bcrypt.hash(password, salt)
-      }
+      if (password) updatedFields.password = password
       const user = await User.findByIdAndUpdate(
           id,
           { $set: updatedFields },
